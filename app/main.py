@@ -27,15 +27,21 @@ async def search(request: Request, query:str, genre:int):
         return {"message": "검색어를 입력해주세요"}
 
     #해당 검색어의 데이터가 이미 DB에 존재한다면 그냥 보여줌
+    # await을 통해 해당 과정 기다리게 함
     if await mongodb.engine.find_one(MovieModel, MovieModel.keyword == keyword):
+
         #만약 존재한다면 모든 데이터 가지고 와서 뷰 구성
+        # await을 통해 해당 과정 기다리게 함
         movies = await mongodb.engine.find(MovieModel, MovieModel.keyword == keyword)
         return movies
 
     #Scrapper를 통해 해당 검색어에 대한 데이터 수집
     movie_scrapper = MovieScraper()
+
     #search가 비동기함수이므로 await 설정, 총 10개의 데이터를 가지고 옴
+    #await을 통해 해당 과정 기다리게 함
     movies = await movie_scrapper.search(keyword, 10, genre)
+
     #각 모델 생성
     movie_models = []
     for movie in movies:
@@ -45,6 +51,7 @@ async def search(request: Request, query:str, genre:int):
                                  subtitle = movie["subtitle"],
                                  pubDate = movie["pubDate"])
         movie_models.append(movie_model)
+
     #DB에 수집된 데이터 저장
     # save_all함수는 await의 동기 패턴을 asyncio 대신 사용해 동시 실행 패턴으로 변경
     await mongodb.engine.save_all(movie_models) # save 함수가 async함수 이므로 즉 코루틴 함수 이므로 await을 붙임
