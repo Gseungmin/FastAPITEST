@@ -2,9 +2,10 @@ from odmantic import Model
 
 
 class MovieModel(Model):
+    keyword: str
     title: str
     image: str
-    subtitle: int
+    subtitle: str
     pubDate: str
 
     class Config:
